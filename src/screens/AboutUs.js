@@ -1,7 +1,5 @@
 import * as React from 'react'
 import {Text, View, TouchableOpacity, Share, Linking} from 'react-native'
-import SettingsComponent from '../components/SettingsComponent'
-import {useState, useEffect} from 'react'
 
 export default function SettingsScreen ({status}) {
   const shareData = async () => {
@@ -24,6 +22,7 @@ export default function SettingsScreen ({status}) {
   const openPrivacyPolicy = () => {
     Linking.openURL('https://github.com')
   }
+
   return (
     <View style={{flex: 1, margin: 15}}>
       <View style={{justifyContent: 'space-evenly'}}>

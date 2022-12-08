@@ -27,14 +27,20 @@ export default function HomeScreen () {
   const [history, setHistory] = useState(0)
   const [defaulttext, setDefaultText] = useState('')
   const [defaultcount, setDefaultCount] = useState(0)
-
+  const [focusText, setFocusText] = useState(false)
+  const [focusCount, setFocusCount] = useState(false)
   const [array, setArray] = useState([])
+  const customstyleText = focusText
+    ? styles.textInputFocussed
+    : styles.textInput
+  const customstyleCount = focusCount
+    ? styles.countInputFocussed
+    : styles.countInput
 
   const updateArray = element => {
     setArray([...array, element])
     console.log(array)
   }
-
   const onOpen = () => {
     modalizeRef.current?.open()
   }
@@ -147,9 +153,11 @@ export default function HomeScreen () {
           position: 'relative',
         }}>
         <TextInput
-          style={styles.textInput}
+          style={customstyleText}
           placeholder='Enter your message'
           onChangeText={value => updateText(value)}
+          onFocus={() => setFocusText(true)}
+          onBlur={() => setFocusText(false)}
           value={defaulttext}
           multiline={true}
         />
@@ -177,8 +185,10 @@ export default function HomeScreen () {
           alignContent: 'center',
         }}>
         <TextInput
-          style={styles.countInput}
+          style={customstyleCount}
           onChangeText={value => updateCount(value)}
+          onFocus={() => setFocusCount(true)}
+          onBlur={() => setFocusCount(false)}
           value={defaultcount}
           placeholder='Repetition Limit'
           keyboardType='number-pad'
@@ -367,13 +377,22 @@ export default function HomeScreen () {
         }}>
         <TouchableOpacity
           onPress={() => onClose()}
-          style={{position: 'absolute', right: 10, top: 10}}>
+          style={{position: 'absolute', right: 10, top: 10, padding: 5}}>
           <Image source={require('../images/close.png')} />
         </TouchableOpacity>
 
         <View style={{}}>
           <View>
-            <Text>Dummy</Text>
+            <Text
+              style={{
+                fontFamily: 'Roboto',
+                fontSize: 16,
+                fontWeight: '600',
+                color: '#121A26',
+                padding: 15,
+              }}>
+              Recent Works
+            </Text>
           </View>
           <View>
             {array.map(arr => {
@@ -402,7 +421,7 @@ export default function HomeScreen () {
                         />
                         <Text
                           style={{
-                            fontSize: 24,
+                            fontSize: 14,
                             fontFamily: 'Roboto',
                             color: '#1D2238',
                             fontWeight: '400',
@@ -411,7 +430,15 @@ export default function HomeScreen () {
                         </Text>
                       </View>
                       <View>
-                        <Text>{arr.count}</Text>
+                        <Text
+                          style={{
+                            fontFamily: 'Roboto',
+                            fontSize: 14,
+                            fontWeight: '400',
+                            color: '#94A3B8',
+                          }}>
+                          {arr.count}
+                        </Text>
                       </View>
                     </TouchableOpacity>
                   </View>
@@ -468,6 +495,17 @@ const styles = StyleSheet.create({
     fontFamily: 'Roboto',
     width: '95%',
   },
+  textInputFocussed: {
+    borderColor: 'green',
+    borderRadius: 12,
+    margin: 10,
+    height: 50,
+    borderWidth: 1,
+    fontSize: 16,
+    fontWeight: '400',
+    fontFamily: 'Roboto',
+    width: '95%',
+  },
   repeatButton: {
     borderColor: '#74CB6B',
     borderRadius: 12,
@@ -483,6 +521,16 @@ const styles = StyleSheet.create({
   },
   countInput: {
     borderColor: '#E2E8F0',
+    borderRadius: 12,
+    height: 50,
+    width: '45%',
+    borderWidth: 1,
+    fontSize: 16,
+    fontWeight: '400',
+    fontFamily: 'Roboto',
+  },
+  countInputFocussed: {
+    borderColor: 'green',
     borderRadius: 12,
     height: 50,
     width: '45%',

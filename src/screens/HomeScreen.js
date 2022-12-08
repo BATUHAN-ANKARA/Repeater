@@ -29,16 +29,10 @@ export default function HomeScreen () {
   const [defaultcount, setDefaultCount] = useState(0)
 
   const [array, setArray] = useState([])
-  const [array2, setArray2] = useState([])
 
   const updateArray = element => {
     setArray([...array, element])
     console.log(array)
-  }
-
-  const updateArray2 = element => {
-    setArray2([...array2, element])
-    console.log(array2)
   }
 
   const onOpen = () => {
@@ -66,6 +60,17 @@ export default function HomeScreen () {
       repeatmessageWithSpace(message, input)
     } else {
       repeatmessageWithNewLine(message, input)
+    }
+  }
+  const fromhistory = (message, count) => {
+    setMessage(message)
+    setDefaultText(message)
+    setCount(count)
+    setDefaultCount(count)
+    if (withSpace == 0) {
+      repeatmessageWithSpace(message, count)
+    } else {
+      repeatmessageWithNewLine(message, count)
     }
   }
   const setSpace = value => {
@@ -136,6 +141,7 @@ export default function HomeScreen () {
           <Image source={require('../images/history.png')} />
         </TouchableOpacity>
       </View>
+
       <View
         style={{
           position: 'relative',
@@ -163,6 +169,7 @@ export default function HomeScreen () {
           <Image source={require('../images/copy.png')} />
         </TouchableOpacity>
       </View>
+
       <View
         style={{
           flexDirection: 'row',
@@ -263,6 +270,7 @@ export default function HomeScreen () {
           Preview
         </Text>
       </View>
+
       <TouchableOpacity
         style={styles.repeatButton}
         onPress={() => {
@@ -273,8 +281,7 @@ export default function HomeScreen () {
             setShow(0)
           }
           copyToClipboard(lastmessage, 1)
-          updateArray(message)
-          updateArray2(count)
+          updateArray({message: message, count: count})
           let temp = id + 1
           setId(temp)
         }}>
@@ -380,11 +387,9 @@ export default function HomeScreen () {
                         justifyContent: 'space-between',
                       }}
                       onPress={() => {
-                        updateText(arr),
-                          copyToClipboard(arr),
-                          setDefaultText(arr),
-                          updateCount(3),
-                          onClose()
+                        fromhistory(arr.message, arr.count)
+                        copyToClipboard(arr.message)
+                        onClose()
                       }}>
                       <View
                         style={{
@@ -402,33 +407,13 @@ export default function HomeScreen () {
                             color: '#1D2238',
                             fontWeight: '400',
                           }}>
-                          {arr}
+                          {arr.message}
                         </Text>
                       </View>
                       <View>
-                        <Text>200</Text>
+                        <Text>{arr.count}</Text>
                       </View>
                     </TouchableOpacity>
-                  </View>
-                </>
-              )
-            })}
-          </View>
-          <View>
-            {array2.map(arr2 => {
-              return (
-                <>
-                  <View style={{padding: 10}}></View>
-                  <View>
-                    <Text
-                      style={{
-                        fontSize: 24,
-                        fontFamily: 'Roboto',
-                        color: '#1D2238',
-                        fontWeight: '400',
-                      }}>
-                      {arr2}
-                    </Text>
                   </View>
                 </>
               )

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import {
   StyleSheet,
   Text,
@@ -11,25 +11,28 @@ import {
 } from 'react-native'
 import {useState, useRef} from 'react'
 import {Modalize} from 'react-native-modalize'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
 const newHeight = Dimensions.get('window').height - 400
 
 export default function HomeScreen () {
   const [height, setHeight] = useState('')
   const [message, setMessage] = useState('')
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(1)
   const [lastmessage, setLastMessage] = useState('')
   const [copiedText, setCopiedText] = useState('')
   const [withSpace, setWithSpace] = useState(0)
-  const [preview, setPreview] = useState(0)
+  const [preview, setPreview] = useState(1)
   const [show, setShow] = useState(0)
   const modalizeRef = useRef(null)
   const [id, setId] = useState(2)
   const [history, setHistory] = useState(0)
   const [defaulttext, setDefaultText] = useState('')
-  const [defaultcount, setDefaultCount] = useState(0)
+  const [defaultcount, setDefaultCount] = useState(1)
   const [focusText, setFocusText] = useState(false)
   const [focusCount, setFocusCount] = useState(false)
   const [array, setArray] = useState([])
+
   const customstyleText = focusText
     ? styles.textInputFocussed
     : styles.textInput
@@ -37,9 +40,48 @@ export default function HomeScreen () {
     ? styles.countInputFocussed
     : styles.countInput
 
+  const storeData = async value => {
+    try {
+      const jsonValue = JSON.stringify(value)
+      await AsyncStorage.setItem('@storage_Key', jsonValue)
+    } catch (e) {
+      // saving error
+    }
+  }
+
+  const storeDefaultData = async value => {
+    try {
+      const jsonValue = JSON.stringify(value)
+      await AsyncStorage.setItem('@storage_Key', jsonValue)
+    } catch (e) {
+      // saving error
+    }
+  }
+
+  const getData = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem('@storage_Key')
+
+      const result = jsonValue != null ? JSON.parse(jsonValue) : null
+      if (result != null) {
+        setArray(result)
+      } else {
+        alert('Local Storage Is Empty')
+      }
+
+      console.log(result)
+    } catch (e) {
+      // error reading value
+    }
+  }
+
   const updateArray = element => {
-    setArray([...array, element])
-    console.log(array)
+    if (element.message == '') {
+      alert('Message Required')
+    } else {
+      setArray([...array, element])
+      copyToClipboard(lastmessage, 1)
+    }
   }
   const onOpen = () => {
     modalizeRef.current?.open()
@@ -124,6 +166,10 @@ export default function HomeScreen () {
     setLastMessage(str)
   }
 
+  useEffect(() => {
+    getData()
+  }, [])
+
   return (
     <View style={styles.container}>
       <View
@@ -143,7 +189,11 @@ export default function HomeScreen () {
         </Text>
         <TouchableOpacity
           style={{marginLeft: 15, left: 90, top: 2}}
-          onPress={() => onOpen()}>
+          onPress={() => {
+            onOpen()
+            storeData(array)
+            getData()
+          }}>
           <Image source={require('../images/history.png')} />
         </TouchableOpacity>
       </View>
@@ -290,8 +340,8 @@ export default function HomeScreen () {
           if (preview == 1) {
             setShow(0)
           }
-          copyToClipboard(lastmessage, 1)
           updateArray({message: message, count: count})
+
           let temp = id + 1
           setId(temp)
         }}>
@@ -375,14 +425,8 @@ export default function HomeScreen () {
           spring: {tension: 3},
           timing: {duration: 900},
         }}>
-        <TouchableOpacity
-          onPress={() => onClose()}
-          style={{position: 'absolute', right: 10, top: 10, padding: 5}}>
-          <Image source={require('../images/close.png')} />
-        </TouchableOpacity>
-
-        <View style={{}}>
-          <View>
+        <View>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
             <Text
               style={{
                 fontFamily: 'Roboto',
@@ -393,9 +437,14 @@ export default function HomeScreen () {
               }}>
               Recent Works
             </Text>
+            <TouchableOpacity
+              onPress={() => onClose()}
+              style={{position: 'absolute', right: 10, top: 10, padding: 5}}>
+              <Image source={require('../images/close.png')} />
+            </TouchableOpacity>
           </View>
           <View>
-            {array.map(arr => {
+            {array?.map(arr => {
               return (
                 <>
                   <View style={{padding: 10}}>

@@ -209,6 +209,7 @@ export default function HomeScreen () {
           onFocus={() => setFocusText(true)}
           onBlur={() => setFocusText(false)}
           value={defaulttext}
+          maxLength={100}
           multiline={true}
         />
         <TouchableOpacity
@@ -237,6 +238,7 @@ export default function HomeScreen () {
         <TextInput
           style={customstyleCount}
           onChangeText={value => updateCount(value)}
+          maxLength={3}
           onFocus={() => setFocusCount(true)}
           onBlur={() => setFocusCount(false)}
           value={defaultcount}

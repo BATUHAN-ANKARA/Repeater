@@ -8,9 +8,8 @@ export default function Navigator () {
     <NavigationContainer>
       <Tab.Navigator>
         <Tab.Screen
-          name='Home'
-          component={HomeScreen}
-          options={{headerShown: false}}
+          name='Home' 
+          component={HomeScreen}      
         />
       </Tab.Navigator>
     </NavigationContainer>

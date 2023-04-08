@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react'
+import React, { useEffect } from 'react'
 import {
   StyleSheet,
   Text,
@@ -7,40 +7,42 @@ import {
   TouchableOpacity,
   Clipboard,
   Image,
-  Dimensions,
+  Dimensions
 } from 'react-native'
-import {useState, useRef} from 'react'
-import {Modalize} from 'react-native-modalize'
+import { useState, useRef } from 'react'
+import { Modalize } from 'react-native-modalize'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import Icon from 'react-native-vector-icons/Ionicons'
 
 const newHeight = Dimensions.get('window').height - 400
 
-export default function HomeScreen () {
-  const [height, setHeight] = useState('')
-  const [message, setMessage] = useState('')
-  const [count, setCount] = useState(1)
-  const [lastmessage, setLastMessage] = useState('')
-  const [copiedText, setCopiedText] = useState('')
-  const [withSpace, setWithSpace] = useState(0)
-  const [preview, setPreview] = useState(1)
-  const [show, setShow] = useState(0)
-  const modalizeRef = useRef(null)
-  const [id, setId] = useState(2)
-  const [history, setHistory] = useState(0)
-  const [defaulttext, setDefaultText] = useState('')
-  const [defaultcount, setDefaultCount] = useState(1)
-  const [focusText, setFocusText] = useState(false)
-  const [focusCount, setFocusCount] = useState(false)
-  const [array, setArray] = useState([])
-
+export default function HomeScreen() {
+  const [height, setHeight] = useState('');
+  const [message, setMessage] = useState('');
+  const [count, setCount] = useState(1);
+  const [lastmessage, setLastMessage] = useState('');
+  const [copiedText, setCopiedText] = useState('');
+  const [withSpace, setWithSpace] = useState(0);
+  const [preview, setPreview] = useState(1);
+  const [show, setShow] = useState(0);
+  const modalizeRef = useRef(null);
+  const [id, setId] = useState(2);
+  const [history, setHistory] = useState(0);
+  const [defaulttext, setDefaultText] = useState('');
+  const [defaultcount, setDefaultCount] = useState(1);
+  const [focusText, setFocusText] = useState(false);
+  const [focusCount, setFocusCount] = useState(false);
+  const [array, setArray] = useState([]);
+;
   const customstyleText = focusText
     ? styles.textInputFocussed
-    : styles.textInput
+    : styles.textInput;
   const customstyleCount = focusCount
     ? styles.countInputFocussed
     : styles.countInput
 
-  const storeData = async value => {
+  const storeData = async (value) => {
     try {
       const jsonValue = JSON.stringify(value)
       await AsyncStorage.setItem('@storage_Key', jsonValue)
@@ -49,7 +51,7 @@ export default function HomeScreen () {
     }
   }
 
-  const storeDefaultData = async value => {
+  const storeDefaultData = async (value) => {
     try {
       const jsonValue = JSON.stringify(value)
       await AsyncStorage.setItem('@storage_Key', jsonValue)
@@ -66,7 +68,7 @@ export default function HomeScreen () {
       if (result != null) {
         setArray(result)
       } else {
-        alert('Local Storage Is Empty')
+        //alert('Local Storage Is Empty')
       }
 
       console.log(result)
@@ -75,7 +77,7 @@ export default function HomeScreen () {
     }
   }
 
-  const updateArray = element => {
+  const updateArray = (element) => {
     if (element.message == '') {
       alert('Message Required')
     } else {
@@ -89,10 +91,10 @@ export default function HomeScreen () {
   const onClose = () => {
     modalizeRef.current?.close()
   }
-  const handleLayout = ({layout}) => {
+  const handleLayout = ({ layout }) => {
     setHeight(layout.height)
   }
-  const updateText = text => {
+  const updateText = (text) => {
     setMessage(text)
     setDefaultText(text)
     if (withSpace == 0) {
@@ -101,7 +103,7 @@ export default function HomeScreen () {
       repeatmessageWithNewLine(text, count)
     }
   }
-  const updateCount = input => {
+  const updateCount = (input) => {
     setCount(input)
     setDefaultCount(input)
     if (withSpace == 0) {
@@ -121,7 +123,7 @@ export default function HomeScreen () {
       repeatmessageWithNewLine(message, count)
     }
   }
-  const setSpace = value => {
+  const setSpace = (value) => {
     let status = value
     if (withSpace == 0) {
       setWithSpace(status)
@@ -171,50 +173,43 @@ export default function HomeScreen () {
   }, [])
 
   return (
-    <View style={styles.container}>
-      <View
-        style={{
-          alignSelf: 'center',
-          flexDirection: 'row',
-          alignItems: 'center',
-        }}>
-        <Text
-          style={{
-            fontFamily: 'Roboto',
-            fontSize: 24,
-            fontWeight: '700',
-            color: '#1D2238',
-          }}>
-          Text Repeater
-        </Text>
-        <TouchableOpacity
-          style={{marginLeft: 15, left: 90, top: 2}}
-          onPress={() => {
-            onOpen()
-            storeData(array)
-            getData()
-          }}>
-          <Image source={require('../images/history.png')} />
-        </TouchableOpacity>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.allContainerArea}>
+        <View style={styles.appTitleArea}>
+          <Text style={styles.appTitle}>Text Repeater</Text>
+          <TouchableOpacity
+            style={styles.historyButton}
+            onPress={() => {
+              onOpen()
+              storeData(array)
+              getData()
+            }}
+          >
+            <Image source={require('../images/history.png')} />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.textInputContainer}>
+          <TextInput
+            style={customstyleText}
+            placeholder="Enter your message"
+            onChangeText={(value) => updateText(value)}
+            onFocus={() => setFocusText(true)}
+            onBlur={() => setFocusText(false)}
+            value={defaulttext}
+            maxLength={100}
+            multiline={true}
+          />
+        </View>
       </View>
 
       <View
         style={{
-          position: 'relative',
-        }}>
-        <TextInput
-          style={customstyleText}
-          placeholder='Enter your message'
-          onChangeText={value => updateText(value)}
-          onFocus={() => setFocusText(true)}
-          onBlur={() => setFocusText(false)}
-          value={defaulttext}
-          maxLength={100}
-          multiline={true}
-        />
+          position: 'relative'
+        }}
+      >
         <TouchableOpacity
           style={{
-            top: 20,
+            top: 10,
             position: 'absolute',
             right: 20,
             width: 32,
@@ -222,10 +217,11 @@ export default function HomeScreen () {
             backgroundColor: '#eee',
             justifyContent: 'center',
             alignItems: 'center',
-            borderRadius: 8,
+            borderRadius: 8
           }}
-          onPress={() => copyToClipboard(message, 0)}>
-          <Image source={require('../images/copy.png')} />
+          onPress={() => copyToClipboard(message, 0)}
+        >
+          <Icon name="copy-outline" color={'#333'} size={18} />
         </TouchableOpacity>
       </View>
 
@@ -233,17 +229,18 @@ export default function HomeScreen () {
         style={{
           flexDirection: 'row',
           justifyContent: 'space-evenly',
-          alignContent: 'center',
-        }}>
+          alignContent: 'center'
+        }}
+      >
         <TextInput
           style={customstyleCount}
-          onChangeText={value => updateCount(value)}
+          onChangeText={(value) => updateCount(value)}
           maxLength={3}
           onFocus={() => setFocusCount(true)}
           onBlur={() => setFocusCount(false)}
           value={defaultcount}
-          placeholder='Repetition Limit'
-          keyboardType='number-pad'
+          placeholder="Repetition Limit"
+          keyboardType="number-pad"
         />
         <TouchableOpacity
           onPress={() => {
@@ -251,38 +248,42 @@ export default function HomeScreen () {
             setSpace(1)
             setPreview(0)
           }}
-          style={{...styles.newLine, justifyContent: 'center'}}>
+          style={{ ...styles.newLine, justifyContent: 'center' }}
+        >
           <Text
             style={{
               position: 'absolute',
               fontSize: 14,
               fontWeight: '400',
-              fontFamily: 'Roboto',
+
               color: 'black',
-              marginLeft: 40,
-            }}>
+              marginLeft: 40
+            }}
+          >
             New Line
           </Text>
           {withSpace ? (
-            <Image
-              source={require('../images/check-button.png')}
+            <View
               style={{
                 width: 25,
                 height: 25,
                 position: 'absolute',
-                marginLeft: 10,
+                marginLeft: 10
               }}
-            />
+            >
+              <Icon name="checkmark-circle-outline" color={'#333'} size={24} />
+            </View>
           ) : (
-            <Image
-              source={require('../images/unchecked.png')}
+            <View
               style={{
                 width: 25,
                 height: 25,
-                marginLeft: 10,
-                marginVertical: -25,
+                position: 'absolute',
+                marginLeft: 10
               }}
-            />
+            >
+              <Icon name="ellipse-outline" color={'#333'} size={24} />
+            </View>
           )}
         </TouchableOpacity>
       </View>
@@ -291,8 +292,9 @@ export default function HomeScreen () {
         style={{
           flexDirection: 'row',
           justifyContent: 'flex-start',
-          padding: 20,
-        }}>
+          padding: 20
+        }}
+      >
         <TouchableOpacity
           onPress={() => {
             repeatmessage(message, withSpace)
@@ -301,34 +303,24 @@ export default function HomeScreen () {
             } else {
               setPreview(0)
             }
-          }}>
+          }}
+        >
           {preview ? (
-            <Image
-              source={require('../images/check-button.png')}
-              style={{
-                width: 25,
-                height: 25,
-              }}
-            />
+            <Icon name="checkmark-circle-outline" color={'#075E54'} size={24} />
           ) : (
-            <Image
-              source={require('../images/circle.png')}
-              style={{
-                width: 25,
-                height: 25,
-              }}
-            />
+            <Icon name="ellipse-outline" color={'#075E54'} size={24} />
           )}
         </TouchableOpacity>
         <Text
           style={{
             marginLeft: 15,
             marginTop: 3,
-            fontFamily: 'Roboto',
+
             fontWeight: '400',
             fontSize: 14,
-            color: 'black',
-          }}>
+            color: 'black'
+          }}
+        >
           Preview
         </Text>
       </View>
@@ -342,30 +334,32 @@ export default function HomeScreen () {
           if (preview == 1) {
             setShow(0)
           }
-          updateArray({message: message, count: count})
+          updateArray({ message: message, count: count })
 
           let temp = id + 1
           setId(temp)
-        }}>
+        }}
+      >
         <Text
           style={{
-            fontFamily: 'Roboto',
             fontSize: 16,
             fontWeight: '600',
-            color: 'white',
-          }}>
+            color: 'white'
+          }}
+        >
           Repeat
         </Text>
       </TouchableOpacity>
 
       {preview ? (
-        <TouchableOpacity style={{alignSelf: 'center'}}>
+        <TouchableOpacity style={{ alignSelf: 'center' }}>
           <Text
             style={{
               color: '#74CB6B',
-              fontFamily: 'Roboto',
-              fontWeight: '400',
-            }}>
+
+              fontWeight: '400'
+            }}
+          >
             Save
           </Text>
         </TouchableOpacity>
@@ -374,12 +368,12 @@ export default function HomeScreen () {
       {preview ? (
         <View
           style={{
-            position: 'relative',
-          }}>
+            position: 'relative'
+          }}
+        >
           <Text
             selectable={true}
             style={{
-              fontFamily: 'Roboto',
               fontSize: 16,
               lineHeight: 32,
               fontWeight: '400',
@@ -395,24 +389,26 @@ export default function HomeScreen () {
               paddingRight: 40,
               width: '90%',
               margin: 5,
-              marginLeft: 10,
-            }}>
+              marginLeft: 10
+            }}
+          >
             {lastmessage}
           </Text>
           <TouchableOpacity
             style={{
               position: 'absolute',
-              top: 10,
+              top: 15,
               right: 35,
               width: 32,
               height: 32,
               backgroundColor: '#eee',
               justifyContent: 'center',
               alignItems: 'center',
-              borderRadius: 8,
+              borderRadius: 8
             }}
-            onPress={() => copyToClipboard(lastmessage, 0)}>
-            <Image source={require('../images/copy.png')} />
+            onPress={() => copyToClipboard(lastmessage, 0)}
+          >
+            <Icon name="copy-outline" color={'#333'} size={18} />
           </TouchableOpacity>
         </View>
       ) : null}
@@ -421,73 +417,80 @@ export default function HomeScreen () {
         panGestureEnabled={false}
         ref={modalizeRef}
         onLayout={handleLayout}
-        scrollViewProps={{contentContainerStyle: {height: '100%'}}}
+        scrollViewProps={{ contentContainerStyle: { height: '100%' } }}
         snapPoint={newHeight}
         closeAnimationClose={{
-          spring: {tension: 3},
-          timing: {duration: 900},
-        }}>
+          spring: { tension: 3 },
+          timing: { duration: 900 }
+        }}
+      >
         <View>
-          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+          <View
+            style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+          >
             <Text
               style={{
-                fontFamily: 'Roboto',
                 fontSize: 16,
                 fontWeight: '600',
                 color: '#121A26',
-                padding: 15,
-              }}>
+                padding: 15
+              }}
+            >
               Recent Works
             </Text>
             <TouchableOpacity
               onPress={() => onClose()}
-              style={{position: 'absolute', right: 10, top: 10, padding: 5}}>
+              style={{ position: 'absolute', right: 10, top: 10, padding: 5 }}
+            >
               <Image source={require('../images/close.png')} />
             </TouchableOpacity>
           </View>
           <View>
-            {array?.map(arr => {
+            {array?.map((arr) => {
               return (
                 <>
-                  <View style={{padding: 10}}>
+                  <View style={{ padding: 10 }}>
                     <TouchableOpacity
                       style={{
                         flexDirection: 'row',
                         alignItems: 'center',
-                        justifyContent: 'space-between',
+                        justifyContent: 'space-between'
                       }}
                       onPress={() => {
                         fromhistory(arr.message, arr.count)
                         copyToClipboard(arr.message)
                         onClose()
-                      }}>
+                      }}
+                    >
                       <View
                         style={{
                           flexDirection: 'row',
-                          alignItems: 'center',
-                        }}>
+                          alignItems: 'center'
+                        }}
+                      >
                         <Image
                           source={require('../images/circle.png')}
-                          style={{width: 24, height: 24, marginRight: 10}}
+                          style={{ width: 24, height: 24, marginRight: 10 }}
                         />
                         <Text
                           style={{
                             fontSize: 14,
-                            fontFamily: 'Roboto',
+
                             color: '#1D2238',
-                            fontWeight: '400',
-                          }}>
+                            fontWeight: '400'
+                          }}
+                        >
                           {arr.message}
                         </Text>
                       </View>
                       <View>
                         <Text
                           style={{
-                            fontFamily: 'Roboto',
                             fontSize: 14,
                             fontWeight: '400',
-                            color: '#94A3B8',
-                          }}>
+                            color: '#94A3B8'
+                          }}
+                        >
                           {arr.count}
                         </Text>
                       </View>
@@ -499,26 +502,82 @@ export default function HomeScreen () {
           </View>
         </View>
       </Modalize>
-    </View>
+    </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: 'white',
-    flex: 4,
-    justifyContent: 'flex-start',
+    flex: 1,
+    padding:15,
   },
+  allContainerArea:{},
+  appTitleArea:{
+    alignItems:'center',
+    marginBottom: 15,
+    position:'relative'
+  },
+  appTitle:{
+    fontWeight:'bold',
+    color:'#000',
+    lineHeight:36,
+    fontSize:24,
+  },
+
+  historyButton:{
+    width:36,
+    height:36,
+    backgroundColor: '#eee',
+    borderRadius: 5,
+    justifyContent: 'center',
+    alignItems:'center',
+    position:'absolute',
+    right: 0,
+  },
+
+  textInputContainer:{
+    position: 'relative'
+  },
+
+  textInput: {
+    height: 50,
+    margin: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    textAlignVertical:'center',
+    justifyContent:'center',
+    borderColor: '#eee',
+    borderRadius: 5,
+    padding: 10,
+  },
+
+  textInputFocussed: {
+    height: 50,
+    margin: 12,
+    textAlignVertical:'center',
+    alignItems: 'center',
+    justifyContent:'center',
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: 'red',
+    padding: 10,
+  },
+
+
+  textInrwqputContainer:{},
+
+
   bottomNavigationView: {
     backgroundColor: '#fff',
     width: '100%',
     height: 250,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   text: {
     // Text styles
-    fontFamily: 'Roboto',
+
     fontSize: 16,
     lineHeight: 32,
     fontWeight: '400',
@@ -533,29 +592,7 @@ const styles = StyleSheet.create({
     width: '90%',
     height: 380,
     margin: 5,
-    marginLeft: 10,
-  },
-  textInput: {
-    borderColor: '#E2E8F0',
-    borderRadius: 12,
-    margin: 10,
-    height: 50,
-    borderWidth: 1,
-    fontSize: 16,
-    fontWeight: '400',
-    fontFamily: 'Roboto',
-    width: '95%',
-  },
-  textInputFocussed: {
-    borderColor: 'green',
-    borderRadius: 12,
-    margin: 10,
-    height: 50,
-    borderWidth: 1,
-    fontSize: 16,
-    fontWeight: '400',
-    fontFamily: 'Roboto',
-    width: '95%',
+    marginLeft: 10
   },
   repeatButton: {
     borderColor: '#74CB6B',
@@ -565,10 +602,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     fontSize: 16,
     fontWeight: '400',
-    fontFamily: 'Roboto',
+
     backgroundColor: '#74CB6B',
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   countInput: {
     borderColor: '#E2E8F0',
@@ -577,8 +614,7 @@ const styles = StyleSheet.create({
     width: '45%',
     borderWidth: 1,
     fontSize: 16,
-    fontWeight: '400',
-    fontFamily: 'Roboto',
+    fontWeight: '400'
   },
   countInputFocussed: {
     borderColor: 'green',
@@ -587,14 +623,13 @@ const styles = StyleSheet.create({
     width: '45%',
     borderWidth: 1,
     fontSize: 16,
-    fontWeight: '400',
-    fontFamily: 'Roboto',
+    fontWeight: '400'
   },
   newLine: {
     borderColor: '#E2E8F0',
     borderRadius: 12,
     height: 50,
     width: '45%',
-    borderWidth: 1,
-  },
+    borderWidth: 1
+  }
 })

@@ -1,4 +1,4 @@
-package com.repeater.newarchitecture.components;
+package com.textrepeater.wr.newarchitecture.components;
 
 import com.facebook.jni.HybridData;
 import com.facebook.proguard.annotations.DoNotStrip;

@@ -5,6 +5,7 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs'
 import HomeScreen from './src/screens/HomeScreen'
 import AboutUs from './src/screens/AboutUs'
 import Icon from 'react-native-vector-icons/Ionicons'
+import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads'
 
 const Tab = createBottomTabNavigator()
 const AnaSayfaIcon = ({ color, size }) => (

@@ -14,8 +14,22 @@ import { Modalize } from 'react-native-modalize'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Icon from 'react-native-vector-icons/Ionicons'
+import {RewardedAd, RewardedAdEventType, BannerAd, BannerAdSize, TestIds,AppOpenAd } from 'react-native-google-mobile-ads'
+import { ScrollView } from 'react-native-gesture-handler'
 
+const adUnitId = TestIds.BANNER
+const adReUnitId = TestIds.REWARDED
 const newHeight = Dimensions.get('window').height - 400
+
+
+const appOpenAd = AppOpenAd.createForAdRequest(adUnitId, {
+  requestNonPersonalizedAdsOnly: true
+})
+const rewarded = RewardedAd.createForAdRequest(adReUnitId, {
+  requestNonPersonalizedAdsOnly: true,
+  keywords: ['fashion', 'clothing']
+})
+
 
 export default function HomeScreen() {
   const [height, setHeight] = useState('');
@@ -34,6 +48,7 @@ export default function HomeScreen() {
   const [focusText, setFocusText] = useState(false);
   const [focusCount, setFocusCount] = useState(false);
   const [array, setArray] = useState([]);
+  const [adLoader, setAdLoader] = useState(false)
 ;
   const customstyleText = focusText
     ? styles.textInputFocussed
@@ -50,16 +65,6 @@ export default function HomeScreen() {
       // saving error
     }
   }
-
-  const storeDefaultData = async (value) => {
-    try {
-      const jsonValue = JSON.stringify(value)
-      await AsyncStorage.setItem('@storage_Key', jsonValue)
-    } catch (e) {
-      // saving error
-    }
-  }
-
   const getData = async () => {
     try {
       const jsonValue = await AsyncStorage.getItem('@storage_Key')
@@ -76,7 +81,6 @@ export default function HomeScreen() {
       // error reading value
     }
   }
-
   const updateArray = (element) => {
     if (element.message == '') {
       alert('Message Required')
@@ -132,17 +136,15 @@ export default function HomeScreen() {
     }
   }
   const copyToClipboard = (str, where) => {
-    Clipboard.setString(str)
-    if (where == 1) {
-      alert('Successfuly Repeated Then Copied')
-    } else {
-      alert('Succesfuly Copied')
-    }
-  }
-  const fetchCopiedText = async () => {
-    const text2 = await Clipboard.getString()
-    setCopiedText(text2)
-    alert(text2)
+    showAd()
+    setTimeout(() => {
+      Clipboard.setString(str)
+      if (where == 1) {
+        alert('Successfuly Repeated Then Copied')
+      } else {
+        alert('Succesfuly Copied')
+      }
+    }, 1000);
   }
   const repeatmessage = (value, st) => {
     if (st == 0) {
@@ -167,238 +169,78 @@ export default function HomeScreen() {
     }
     setLastMessage(str)
   }
+ 
+  const showAd = () => {
+    setAdLoader(true)
+    const unsubscribeLoaded = rewarded.addAdEventListener(
+      RewardedAdEventType.LOADED,
+      () => {
+        console.log('Reklam yüklendi')
+        setAdLoader(false)
+        rewarded.show()
+      }
+    )
+    const unsubscribeEarned = rewarded.addAdEventListener(
+      RewardedAdEventType.EARNED_REWARD,
+      (reward) => {
+        console.log('User earned reward of ')
+      }
+    )
+    rewarded.load()
+    // Unsubscribe from events on unmount
+    return () => {
+      unsubscribeLoaded()
+      unsubscribeEarned()
+    }
+  }
 
   useEffect(() => {
+    console.log("açıldı.")
+    
     getData()
   }, [])
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.allContainerArea}>
-        <View style={styles.appTitleArea}>
-          <Text style={styles.appTitle}>Text Repeater</Text>
-          <TouchableOpacity
-            style={styles.historyButton}
-            onPress={() => {
-              onOpen()
-              storeData(array)
-              getData()
-            }}
-          >
-            <Image source={require('../images/history.png')} />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.textInputContainer}>
-          <TextInput
-            style={customstyleText}
-            placeholder="Enter your message"
-            onChangeText={(value) => updateText(value)}
-            onFocus={() => setFocusText(true)}
-            onBlur={() => setFocusText(false)}
-            value={defaulttext}
-            maxLength={100}
-            multiline={true}
-          />
-        </View>
-      </View>
-
-      <View
-        style={{
-          position: 'relative'
-        }}
-      >
-        <TouchableOpacity
-          style={{
-            top: 10,
-            position: 'absolute',
-            right: 20,
-            width: 32,
-            height: 32,
-            backgroundColor: '#eee',
-            justifyContent: 'center',
-            alignItems: 'center',
-            borderRadius: 8
-          }}
-          onPress={() => copyToClipboard(message, 0)}
-        >
-          <Icon name="copy-outline" color={'#333'} size={18} />
-        </TouchableOpacity>
-      </View>
-
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-evenly',
-          alignContent: 'center'
-        }}
-      >
-        <TextInput
-          style={customstyleCount}
-          onChangeText={(value) => updateCount(value)}
-          maxLength={3}
-          onFocus={() => setFocusCount(true)}
-          onBlur={() => setFocusCount(false)}
-          value={defaultcount}
-          placeholder="Repetition Limit"
-          keyboardType="number-pad"
-        />
-        <TouchableOpacity
-          onPress={() => {
-            repeatmessage(message, withSpace)
-            setSpace(1)
-            setPreview(0)
-          }}
-          style={{ ...styles.newLine, justifyContent: 'center' }}
-        >
-          <Text
-            style={{
-              position: 'absolute',
-              fontSize: 14,
-              fontWeight: '400',
-
-              color: 'black',
-              marginLeft: 40
-            }}
-          >
-            New Line
-          </Text>
-          {withSpace ? (
-            <View
-              style={{
-                width: 25,
-                height: 25,
-                position: 'absolute',
-                marginLeft: 10
+      <ScrollView>
+        <View style={styles.allContainerArea}>
+          <View style={styles.appTitleArea}>
+            <Text style={styles.appTitle}>Text Repeater</Text>
+            <TouchableOpacity
+              style={styles.historyButton}
+              onPress={() => {
+                onOpen()
+                storeData(array)
+                getData()
               }}
             >
-              <Icon name="checkmark-circle-outline" color={'#333'} size={24} />
-            </View>
-          ) : (
-            <View
-              style={{
-                width: 25,
-                height: 25,
-                position: 'absolute',
-                marginLeft: 10
-              }}
-            >
-              <Icon name="ellipse-outline" color={'#333'} size={24} />
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
+              <Image source={require('../images/history.png')} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.textInputContainer}>
+            <TextInput
+              style={customstyleText}
+              placeholder="Enter your message"
+              onChangeText={(value) => updateText(value)}
+              onFocus={() => setFocusText(true)}
+              onBlur={() => setFocusText(false)}
+              value={defaulttext}
+              maxLength={100}
+              multiline={true}
+            />
+          </View>
+        </View>
 
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'flex-start',
-          padding: 20
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => {
-            repeatmessage(message, withSpace)
-            if (preview == 0) {
-              setPreview(1)
-            } else {
-              setPreview(0)
-            }
-          }}
-        >
-          {preview ? (
-            <Icon name="checkmark-circle-outline" color={'#075E54'} size={24} />
-          ) : (
-            <Icon name="ellipse-outline" color={'#075E54'} size={24} />
-          )}
-        </TouchableOpacity>
-        <Text
-          style={{
-            marginLeft: 15,
-            marginTop: 3,
-
-            fontWeight: '400',
-            fontSize: 14,
-            color: 'black'
-          }}
-        >
-          Preview
-        </Text>
-      </View>
-
-      <TouchableOpacity
-        style={styles.repeatButton}
-        onPress={() => {
-          if (preview == 0) {
-            setShow(1)
-          }
-          if (preview == 1) {
-            setShow(0)
-          }
-          updateArray({ message: message, count: count })
-
-          let temp = id + 1
-          setId(temp)
-        }}
-      >
-        <Text
-          style={{
-            fontSize: 16,
-            fontWeight: '600',
-            color: 'white'
-          }}
-        >
-          Repeat
-        </Text>
-      </TouchableOpacity>
-
-      {preview ? (
-        <TouchableOpacity style={{ alignSelf: 'center' }}>
-          <Text
-            style={{
-              color: '#74CB6B',
-
-              fontWeight: '400'
-            }}
-          >
-            Save
-          </Text>
-        </TouchableOpacity>
-      ) : null}
-
-      {preview ? (
         <View
           style={{
             position: 'relative'
           }}
         >
-          <Text
-            selectable={true}
-            style={{
-              fontSize: 16,
-              lineHeight: 32,
-              fontWeight: '400',
-              textAlign: 'left',
-              color: 'black',
-              borderColor: '#E2E8F0',
-              borderRadius: 16,
-              borderWidth: 1,
-              backgroundColor: 'white',
-              paddingLeft: 15,
-              paddingTop: 15,
-              paddingBottom: 15,
-              paddingRight: 40,
-              width: '90%',
-              margin: 5,
-              marginLeft: 10
-            }}
-          >
-            {lastmessage}
-          </Text>
           <TouchableOpacity
             style={{
+              top: 10,
               position: 'absolute',
-              top: 15,
-              right: 35,
+              right: 20,
               width: 32,
               height: 32,
               backgroundColor: '#eee',
@@ -406,12 +248,222 @@ export default function HomeScreen() {
               alignItems: 'center',
               borderRadius: 8
             }}
-            onPress={() => copyToClipboard(lastmessage, 0)}
+            onPress={() => copyToClipboard(message, 0)}
           >
             <Icon name="copy-outline" color={'#333'} size={18} />
           </TouchableOpacity>
         </View>
-      ) : null}
+
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignContent: 'center'
+          }}
+        >
+          <TextInput
+            style={customstyleCount}
+            onChangeText={(value) => updateCount(value)}
+            maxLength={3}
+            onFocus={() => setFocusCount(true)}
+            onBlur={() => setFocusCount(false)}
+            value={defaultcount}
+            placeholder="Repetition Limit"
+            keyboardType="number-pad"
+          />
+          <TouchableOpacity
+            onPress={() => {
+              repeatmessage(message, withSpace)
+              setSpace(1)
+              setPreview(0)
+            }}
+            style={{ ...styles.newLine, justifyContent: 'center', }}
+          >
+            <Text
+              style={{
+                position: 'absolute',
+                fontSize: 14,
+                fontWeight: '400',
+
+                color: 'black',
+                marginLeft: 40
+              }}
+            >
+              New Line
+            </Text>
+            {withSpace ? (
+              <View
+                style={{
+                  width: 25,
+                  height: 25,
+                  position: 'absolute',
+                  marginLeft: 10
+                }}
+              >
+                <Icon
+                  name="checkmark-circle-outline"
+                  color={'#333'}
+                  size={24}
+                />
+              </View>
+            ) : (
+              <View
+                style={{
+                  width: 25,
+                  height: 25,
+                  position: 'absolute',
+                  marginLeft: 10
+                }}
+              >
+                <Icon name="ellipse-outline" color={'#333'} size={24} />
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+        <View
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginTop: 30
+          }}
+        >
+          <BannerAd
+            unitId={adUnitId}
+            size={BannerAdSize.BANNER}
+            requestOptions={{
+              requestNonPersonalizedAdsOnly: true
+            }}
+          />
+        </View>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
+            paddingLeft: 0,
+            marginTop: 20
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => {
+              repeatmessage(message, withSpace)
+              if (preview == 0) {
+                setPreview(1)
+              } else {
+                setPreview(0)
+              }
+            }}
+          >
+            {preview ? (
+              <Icon
+                name="checkmark-circle-outline"
+                color={'#075E54'}
+                size={24}
+              />
+            ) : (
+              <Icon name="ellipse-outline" color={'#075E54'} size={24} />
+            )}
+          </TouchableOpacity>
+          <Text
+            style={{
+              marginLeft: 5,
+              marginTop: 3,
+              fontWeight: '400',
+              fontSize: 14,
+              color: 'black'
+            }}
+          >
+            Preview
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          style={styles.repeatButton}
+          onPress={() => {
+            if (preview == 0) {
+              setShow(1)
+            }
+            if (preview == 1) {
+              setShow(0)
+            }
+            updateArray({ message: message, count: count })
+            let temp = id + 1
+            setId(temp)
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: '600',
+              color: 'white'
+            }}
+          >
+            Repeat
+          </Text>
+        </TouchableOpacity>
+
+        {preview ? (
+          <TouchableOpacity style={{ width: '100%', height:40,
+          justifyContent: 'center',
+          alignItems: 'center', alignSelf: 'center' }}>
+            <Text
+              style={{
+                color: '#74CB6B',
+                fontWeight: '400'
+              }}
+            >
+              Save
+            </Text>
+          </TouchableOpacity>
+        ) : null}
+
+        {preview ? (
+          <View
+            style={{
+              marginTop: 20,
+              position: 'relative',
+              width: '100%'
+            }}
+          >
+            <Text
+              selectable={true}
+              style={{
+                fontSize: 16,
+                lineHeight: 32,
+                fontWeight: '400',
+                textAlign: 'left',
+                color: 'black',
+                borderColor: '#E2E8F0',
+                borderRadius: 10,
+                borderWidth: 1,
+                backgroundColor: 'white',
+                width: '100%',
+                paddingTop: 15,
+                paddingLeft: 15,
+                paddingBottom: 15,
+                paddingRight: 60
+              }}
+            >
+              {lastmessage}
+            </Text>
+            <TouchableOpacity
+              style={{
+                position: 'absolute',
+                top: 15,
+                right: 15,
+                width: 32,
+                height: 32,
+                backgroundColor: '#eee',
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: 8
+              }}
+              onPress={() => copyToClipboard(lastmessage, 0)}
+            >
+              <Icon name="copy-outline" color={'#333'} size={18} />
+            </TouchableOpacity>
+          </View>
+        ) : null}
+      </ScrollView>
 
       <Modalize
         panGestureEnabled={false}
@@ -510,63 +562,60 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: 'white',
     flex: 1,
-    padding:15,
+    padding: 15
   },
-  allContainerArea:{},
-  appTitleArea:{
-    alignItems:'center',
+  allContainerArea: {},
+  appTitleArea: {
+    alignItems: 'center',
     marginBottom: 15,
-    position:'relative'
+    position: 'relative'
   },
-  appTitle:{
-    fontWeight:'bold',
-    color:'#000',
-    lineHeight:36,
-    fontSize:24,
+  appTitle: {
+    fontWeight: 'bold',
+    color: '#000',
+    lineHeight: 36,
+    fontSize: 24
   },
 
-  historyButton:{
-    width:36,
-    height:36,
+  historyButton: {
+    width: 36,
+    height: 36,
     backgroundColor: '#eee',
     borderRadius: 5,
     justifyContent: 'center',
-    alignItems:'center',
-    position:'absolute',
-    right: 0,
+    alignItems: 'center',
+    position: 'absolute',
+    right: 0
   },
 
-  textInputContainer:{
+  textInputContainer: {
     position: 'relative'
   },
 
   textInput: {
     height: 50,
-    margin: 12,
     borderWidth: 1,
     alignItems: 'center',
-    textAlignVertical:'center',
-    justifyContent:'center',
+    textAlignVertical: 'center',
+    justifyContent: 'center',
     borderColor: '#eee',
     borderRadius: 5,
-    padding: 10,
+    padding: 10
   },
 
   textInputFocussed: {
     height: 50,
-    margin: 12,
-    textAlignVertical:'center',
+    marginBottom: 10,
+    textAlignVertical: 'center',
     alignItems: 'center',
-    justifyContent:'center',
+    justifyContent: 'center',
     borderWidth: 1,
     borderRadius: 5,
     borderColor: 'red',
-    padding: 10,
+    padding: 10
   },
 
-
-  textInrwqputContainer:{},
-
+  textInrwqputContainer: {},
 
   bottomNavigationView: {
     backgroundColor: '#fff',
@@ -597,7 +646,8 @@ const styles = StyleSheet.create({
   repeatButton: {
     borderColor: '#74CB6B',
     borderRadius: 12,
-    margin: 15,
+    width: '100%',
+    marginTop: 20,
     height: 50,
     borderWidth: 1,
     fontSize: 16,
@@ -609,27 +659,29 @@ const styles = StyleSheet.create({
   },
   countInput: {
     borderColor: '#E2E8F0',
-    borderRadius: 12,
+    borderRadius: 5,
     height: 50,
-    width: '45%',
+    width: '47%',
     borderWidth: 1,
     fontSize: 16,
+    paddingLeft: 10,
     fontWeight: '400'
   },
   countInputFocussed: {
     borderColor: 'green',
-    borderRadius: 12,
+    borderRadius: 5,
     height: 50,
-    width: '45%',
+    width: '47%',
+    paddingLeft: 10,
     borderWidth: 1,
     fontSize: 16,
     fontWeight: '400'
   },
   newLine: {
     borderColor: '#E2E8F0',
-    borderRadius: 12,
+    borderRadius: 5,
     height: 50,
-    width: '45%',
+    width: '47%',
     borderWidth: 1
   }
 })
